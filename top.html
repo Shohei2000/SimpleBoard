@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="style.css">
+<title>掲示板一覧</title>
+</head>
+<body>
+	<nav>
+		<ul>
+			<li><a href="top.html">Home</a></li>
+			<li><a href="create.html">Create Thread</a></li>
+		</ul>
+	</nav>
+
+	<h1>掲示板一覧</h1>
+	<ul id="board-list" class="list">
+		<!-- ここに掲示板の一覧を表示するためのコードを追加します -->
+	</ul>
+
+	<h2>新しいスレッドを作成する</h2>
+	<form id="create-thread-form">
+		<input type="text" id="thread-title-input" placeholder="スレッドのタイトル"><br>
+		<button type="submit">作成</button>
+	</form>
+
+	<script>
+	// ローカルストレージから掲示板データを読み込む関数
+    function loadBoardsFromLocalStorage() {
+      var savedBoards = localStorage.getItem("boards");
+      if (savedBoards) {
+        boards = JSON.parse(savedBoards);
+        generateBoardList();
+      } else {
+        boards = []; // boardsが定義されていない場合、空の配列を作成
+      }
+    }
+
+    // ローカルストレージに掲示板データを保存する関数
+    function saveBoardsToLocalStorage() {
+      localStorage.setItem("boards", JSON.stringify(boards));
+    }
+
+    // 掲示板一覧を生成する関数
+    function generateBoardList() {
+      var boardList = document.getElementById("board-list");
+      boardList.innerHTML = ""; // 既存の一覧をクリア
+
+      boards.forEach(function(board) {
+        var listItem = document.createElement("p");
+        var link = document.createElement("a");
+        link.href = "thread.html?id=" + board.id + "&title=" + encodeURIComponent(board.title);
+        link.textContent = board.title;
+        listItem.appendChild(link);
+        boardList.appendChild(listItem);
+      });
+    }
+
+    // スレッド作成フォームの送信イベントを処理する関数
+    function handleCreateThread(event) {
+      event.preventDefault(); // フォームのデフォルトの送信動作をキャンセル
+
+      var threadTitleInput = document.getElementById("thread-title");
+      var threadTitle = threadTitleInput.value.trim(); // 入力値を取得
+
+      if (threadTitle === "") {
+        alert("スレッドのタイトルを入力してください");
+        return;
+      }
+
+      // 新しいスレッドを作成
+      var newThread = {
+        id: boards.length + 1, // 既存のスレッド数+1としてIDを設定（仮）
+        title: threadTitle
+      };
+
+      // 新しいスレッドを掲示板一覧に追加
+      boards.push(newThread);
+
+      // 掲示板一覧を再生成
+      generateBoardList();
+
+      // ローカルストレージに掲示板データを保存
+      saveBoardsToLocalStorage();
+
+      // フォームをリセット
+      threadTitleInput.value = "";
+    }
+
+    // ページが読み込まれた時に、ローカルストレージから掲示板データを読み込む
+    window.addEventListener("DOMContentLoaded", loadBoardsFromLocalStorage);
+
+    // スレッド作成フォームの送信イベントを設定
+    var createThreadForm = document.getElementById("create-thread-form");
+    createThreadForm.addEventListener("submit", handleCreateThread);
+  </script>
+</body>
+</html>

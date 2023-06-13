@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="style.css">
+<title>スレッド</title>
+</head>
+<body>
+	<nav>
+		<ul>
+			<li><a href="top.html">Home</a></li>
+			<li><a href="create.html">Create Thread</a></li>
+		</ul>
+	</nav>
+
+	<h1 id="thread-title"></h1>
+	<ul id="message-list" class="list">
+		<!-- ここにメッセージの一覧を表示するためのコードを追加します -->
+	</ul>
+
+	<h2>新しいメッセージを投稿する</h2>
+	<form id="create-message-form">
+		<input type="text" id="message-content-input" placeholder="メッセージの内容"><br>
+		<button type="submit">投稿</button>
+	</form>
+
+	<script>
+		var threadId = getParameterByName("id");
+		var threadTitle = getParameterByName("title");
+
+		var messageList = document.getElementById("message-list");
+		var threadTitleElement = document.getElementById("thread-title");
+
+		threadTitleElement.textContent = threadTitle;
+
+		// ローカルストレージからメッセージデータを読み込む
+		function loadMessagesFromLocalStorage() {
+			var savedMessages = localStorage.getItem("messages_" + threadId);
+			if (savedMessages) {
+				messages = JSON.parse(savedMessages);
+				generateMessageList();
+			} else {
+				messages = []; // messagesが定義されていない場合、空の配列を作成
+			}
+		}
+
+		// ローカルストレージにメッセージデータを保存する
+		function saveMessagesToLocalStorage() {
+			localStorage.setItem("messages_" + threadId, JSON
+					.stringify(messages));
+		}
+
+		// メッセージ一覧を生成する
+		function generateMessageList() {
+			messageList.innerHTML = ""; // 既存の一覧をクリア
+
+			messages.forEach(function(message) {
+				var listItem = document.createElement("p");
+				listItem.textContent = message.content;
+				messageList.appendChild(listItem);
+			});
+		}
+
+		// メッセージ投稿フォームの送信イベントを処理する関数
+		function handleCreateMessage(event) {
+			event.preventDefault(); // フォームのデフォルトの送信動作をキャンセル
+
+			var messageContentInput = document
+					.getElementById("message-content");
+			var messageContent = messageContentInput.value.trim(); // 入力値を取得
+
+			if (messageContent === "") {
+				alert("メッセージの内容を入力してください");
+				return;
+			}
+
+			// 新しいメッセージを作成
+			var newMessage = {
+				content : messageContent
+			};
+
+			// 新しいメッセージをメッセージ一覧に追加
+			messages.push(newMessage);
+
+			// メッセージ一覧を再生成
+			generateMessageList();
+
+			// ローカルストレージにメッセージデータを保存
+			saveMessagesToLocalStorage();
+
+			// フォームをリセット
+			messageContentInput.value = "";
+		}
+
+		// ページが読み込まれた時に、ローカルストレージからメッセージデータを読み込む
+		window.addEventListener("DOMContentLoaded",
+				loadMessagesFromLocalStorage);
+
+		// メッセージ投稿フォームの送信イベントを設定
+		var createMessageForm = document.getElementById("create-message-form");
+		createMessageForm.addEventListener("submit", handleCreateMessage);
+
+		// URLからパラメーターを取得するヘルパー関数
+		function getParameterByName(name) {
+			var url = window.location.href;
+			name = name.replace(/[\[\]]/g, "\\$&");
+			var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)");
+			var results = regex.exec(url);
+			if (!results)
+				return null;
+			if (!results[2])
+				return "";
+			return decodeURIComponent(results[2].replace(/\+/g, " "));
+		}
+	</script>
+</body>
+</html>
